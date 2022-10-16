@@ -425,10 +425,92 @@
 <p>链路追踪系统的起源：</p>
 <p>Dapper是google公司在2008年就开始内部使用经过生产环境验证的链路追踪系统。<br> 2010年Google 发布的Dapper论文，&lt;&lt;Dapper, a Large-Scale Distributed Systems Tracing<br>Infrastructure (2010)&gt;&gt;<br> <a target="_blank" rel="noopener" href="https://static.googleusercontent.com/media/research.google.com/zh-CN//archive/papers/dapper-">https://static.googleusercontent.com/media/research.google.com/zh-CN//archive/papers/dapper-</a> 2010-1.pdf</p>
 <p>链路追踪系统的起源：</p>
-<p><img src="/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016193217053.png" alt="image-20221016193217053"></p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016193217053.png" alt="image-20221016193217053"></p>
 <p>面临的业务环境：</p>
 <p>业务系统是使用复杂的、大规模的分布式集群实现，并且有服务很多服务组成。<br>每个服务可能使用不同的软件模块或开发框架。<br>每个服务可能使用不同的编程语言开发。<br>服务可能运行在数千台服务器，并且分布在不同的数据中心运行，对管理和监控产生挑战。<br>因此需要有专门的工具去跟踪请求、理解整体系统的瓶颈和实时的表现，假如一个请求太慢，那么<br>要通过工具可以快速的找到问题所在。</p>
+<p>面临的业务环境：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016193728306.png" alt="image-20221016193728306"></p>
+<p>针对dapper的设计要求：</p>
+<p>1：无处不在的部署：<br>任何服务都应该被监控到，任何服务出问题都要做到有据可查。<br>2：持续的监控<br>做到7*24小时全天候监控，任何时候出了问题都要基于监控数据追踪问题根源。</p>
+<p>针对dapper的设计目标：</p>
+<p>1.低消耗：<br>dapper跟踪系统对服务的影响应该做到最小，在一些高并发的场合，即使很小的影响也可能会导致服务出现延迟、负载变高或不可用，从而导致业务团队可能会停止dapper系统。<br>2.对应用透明：<br>应用程序对dapper系统无感知甚至不知道dapper系统的存在，假如一个跟踪系统必须依赖于应用的开发者配合才能实现跟踪，也即是需要在应用中植入跟踪代码，那么可能会因为代码产生bug或导致应用出问题。<br>3.可伸缩性：<br>针对未来众多的服务和大规模业务集群，dapper系统应该能满足未来在性能的压力和功能上的需求。</p>
+<p>dapper介绍-请求链路：</p>
+<p>图中展现的是一个有5台服务器相关的一个服务，包括：前端（A），两个中间层（B和C），以及两个后端（D和E），当一个用户（这个用例的发起人）发起一个请求时，首先到达前端（A），然后发送两个RPC到服务器B和C，B收到请求后会马上做出响应，但是C需要和后端的D和E交互之后再返还给A，由A来响应最初的客户请求，对于这样一个请求，简单实用的分布式跟踪的实现，就是为服务器上每一次发送和接收动作来收集跟踪标识符(message identifiers)和时间戳(timestamped events)。</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016194120057.png" alt="image-20221016194120057"></p>
+<p>dapper介绍-数据采集方法：</p>
+<p>分布式追踪的设计方案主要可以分为两类：<br>黑盒法（black-box）和标记法（annotation-based）<br>黑盒法：<br>黑盒法无需任何侵入性代码，它的优势在于无需修改代码，缺点在于记录不是很准确，且需要大量数据才能够推导出服务间的关系。<br>标记法：<br>标记法需要为每个请求打标记，并通过一个全局标识符将请求途径的所有服务信息串联，复盘整个链路。标记法记录准确，但它的缺点也很明显，需要将标记代码注入到每个服务中。在 Google 内部，几乎所有应用都使用相同的 threading model、control flow 和 RPC systems，因此可以将打标记的工作集中在少量的公共库中，同样能够达到对应用透明的效果。</p>
+<p>dapper介绍-跟踪树和span：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016194646375.png" alt="image-20221016194646375"></p>
+<p>dapper介绍-跟踪树和span：</p>
+<p>任何一个span可以包含来自不同的主机信息，这些也要记录下来，事实上每一个RPC span可以包含客户端和服务器两个过程的注释，使得链接两个主机的span会成为图中所说的span，由于客户端和服务器上的时间戳来自不同的主机，还必须考虑到时间偏差，在分析工具就利用了时间偏差，即RPC客户端发送一个请求之后，服务器端才能接收到，对于响应也是一样的（服务器先响应，然后客户端才能接收到这个响应），这样一来，服务器端的RPC就有一个时间戳的一个开始和结束，然后就可以计算出时间损耗。</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016200604043.png" alt="image-20221016200604043"></p>
+<p>dapper介绍-traceid 、spanid、parentid示意图：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016200631888.png" alt="image-20221016200631888"></p>
+<p>dapper介绍-植入点：</p>
+<p>Dapper可以实现对应用开发者近乎零浸入的成本对分布式请求链路进行跟踪，主要通过通用组件库实现：<br>当一个线程在处理跟踪请求链路的过程中，Dapper把这次跟踪的上下文的在ThreadLocal中进行存储，追踪上下文是一个小而且容易复制的空间，其中记录了Span的属性信息，比如跟踪ID和span ID。<br>当用户的请求处理过程是延迟调用的或是异步的，大多数Google开发者通过线程池或其他执行器，使用一个通用的控制流库来回调，Dapper确保所有这样的回调可以存储这次跟踪的上下文，而当回调函数被触发时，这次跟踪的上下文会与适当的线程关联上。在这种方式下，Dapper可以使用trace ID和span ID来辅助构建异步调用的路径。<br>几乎所有的Google的进程间通信是建立在一个用C++和Java开发的RPC框架上。我们把跟踪植入该框架来定义RPC中所有的span，span的ID和跟踪的ID会从客户端发送到服务端，像那样的基于RPC的系统被广泛使用在Google中，这是一个重要的植入点，当那些非RPC通信框架发展成熟并找到了自己的用户群之后，我们会计划对RPC通信框架进行植入。</p>
+<p>dapper介绍-Annotation：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016201849694.png" alt="image-20221016201849694"></p>
+<p>dapper介绍-采样率:</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016201916371.png" alt="image-20221016201916371"></p>
+<p>dapper介绍-跟踪的代价：</p>
+<p>在生产环境的跟踪数据处理中，dapper的守护进程从来没有超过0.3%的单核cpu使用率，而且只有很少量的内存使用，另外还限制了Dapper守护进程为内核scheduler最低的优先级，以防在一台高负载的服务器上发生cpu竞争。<br>Dapper也是一个带宽资源的轻量级的消费者，每一个span在我们的仓库中传输只占用了平均426的byte，作为网络行为中的极小部分，Dapper的数据收集在Google的生产环境中的只占用了0.01%的网络资源。<br>创建root span: 204纳秒，创建一般的span: 176纳秒<br>建立一个annonation: 40纳秒<br>写到本地磁盘<br>Dapper本地进程：&lt;0.3% CPU, &lt; 0.01% 网络</p>
+<p>dapper介绍-Dapper应用场景：</p>
+<p>性能分析：开发人员针对请求延迟的目标进行跟踪，并对容易优化的地方进行定位。<br>正确性分析：发现一些只读请求应该是访问从库但是却访问了主库等类似业务场景。<br>理解系统：全局优化系统，理解每个查询的整体代价。<br>测试新版本：发现新版本的bug和性能问题。<br>解决依赖关系：找到服务之间的依赖关系。</p>
+<h2 id="二：分布式链路追踪系统简简介"><a href="#二：分布式链路追踪系统简简介" class="headerlink" title="二：分布式链路追踪系统简简介"></a>二：分布式链路追踪系统简简介</h2><p>APM概述:</p>
+<p>APM 系统（Application Performance Management，即应用性能管理）</p>
+<p>早期APM工具功能比较单一，主要以监控CPU使用率、I&#x2F;O、内存资源、网速等网络基础设施为主(cacti、nagios)后来随着中间件技术的不断发展，APM也开始监控缓存、数据库、MQ等各种基础组件的性能(zabbix、prometheus)</p>
+<p>微服务兴起之后，系统功能被模块化，再加上k8s与容器化的兴起及应用数量的爆炸式增长，各模块和服务之的调用链路、响应时间、负载等越来越不好通过传统的工具进行监控和统计，此时APM系统诞生了(应运而生)。</p>
+<p>APM项目：</p>
+<p>1.CAT： 由国内美团点评开源的，基于Java语言开发，目前提供Java、C&#x2F;C++、Node.js、Python、Go等语言的客户端，监控数据会全量统计，国内很多公司在用，例如美团点评、携程、拼多多等，CAT需要开发人员手动在应用程序中埋点，对代码侵入性比较强。<br>2.Zipkin： 由Twitter公司开发并开源，基于Java 语言实现，侵入性相对于CAT要低一点，需要对web.xml等相关配置文件进行修改，但依然对系统有一定的侵入性，Zipkin可以轻松与Spring Cloud进行集成，也是SpringCloud推荐的APM系统。<br>3.jaeger 是Uber推出的一款开源分布式追踪系统，主要使用go语言开发，对业务代码侵入性较少。<br>4.Pinpoint： 韩国团队开源的APM产品，运用了字节码增强技术，只需要在启动时添加启动参数即可实现APM功能，对代码无侵入，目前支持Java和 PHP语言，底层采用HBase来存储数据，探针收集的数据粒度非常细，但性能损耗较大，因其出现的时间较长，完成度也很高，文档也较为丰富，应用的公司较多。</p>
+<p>5.SkyWalking： Skywalking是由国内开源爱好者吴晟开源并提交到Apache孵化器的开源项目，2017年12月SkyWalking成为Apache国内首个个人孵化项目，2019年4月17日SkyWalking从Apache基金会的孵化器毕业成为顶级项目，目前SkyWalking支持Java、.Net、Node.js、go、python等探针，数据存储支持MySQL、ElasticSearch等，SkyWalking与Pinpoint相同，对业务代码无侵入，不过探针采集数据粒度相较于Pinpoint来说略粗，但性能表现优秀，目前SkyWalking增长势头强劲，社区活跃，中文文档齐全，没有语言障碍，支持多语言探针，这些都是 SkyWalking的优势所在，还有就是SkyWalking支持很多框架，包括很多国产框架，例如，Dubbo、gRPC、SOFARPC 等等，同时也有很多开发者正在不断向社区提供更多插件以支持更多组件无缝接入SkyWalking。</p>
+<p>6.开源的：piwik等 #<a target="_blank" rel="noopener" href="http://blogs.studylinux.net/?p=750">http://blogs.studylinux.net/?p=750</a><br>7.商业的：百度统计&#x2F;growingio等</p>
+<p>OpenTracing规范：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016203857965.png" alt="image-20221016203857965"></p>
+<p>OpenTracing Data Model-Trace：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016204301238.png" alt="image-20221016204301238"></p>
+<p>OpenTracing Data Model-Span：</p>
+<p>Span 代表系统中具有开始时间和执行时长的请求跨度，Span之间通过嵌套或者顺序排列建立逻辑因果关系。<br>每个Span中可以包含以下的信息：<br>操作名称：例如访问的具体 RPC 服务，访问的 URL 地址等；<br>起始时间；<br>结束时间；<br>Span Tag：一组键值对构成的 Span 标签集合，其中键必须为字符串类型，值可以是字符串、bool 值或者数字；<br>Span Log：一组 Span 的日志集合；<br>SpanContext：Trace 的全局上下文信息；<br>References：Span 之间的引用关系，下面详细说明 Span 之间的引用关系；<br>Span的请求会产生logs，logs会携带一个时间戳以及一个可选的附加信息。</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016204741588.png" alt="image-20221016204741588"></p>
+<p>OpenTracing Data Model-Tags：</p>
+<p>每个 Span 可以有多个键值对形式的 Tags，Tags 是没有时间戳的，只是为 Span 添加一些简单解释<br>和补充信息</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016204954584.png" alt="image-20221016204954584"></p>
+<p>APM对比：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016205015600.png" alt="image-20221016205015600"></p>
+<p>skywalking 简介-特点：</p>
+<p>实现从请求跟踪、指标收集和日志记录的完整信息记录。<br>多语言自动探针，支持Java、GO、Python、PHP、NodeJS、LUA、Rust等客户端。<br>内置服务网格可观察性，支持从Istio+Envoy Service Mesh收集和分析数据。<br>模块化架构，存储、集群管理、使用插件集合都可以进行自由选择。<br>支持告警。<br>优秀的可视化效果。</p>
+<p>kywalking 简介-组件：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016205730486.png" alt="image-20221016205730486"></p>
+<p>kywalking 简介-组件：</p>
+<p>OAP平台(Observability Analysis Platform，可观测性分析平台)或OAP Server，它是一个高度件化的轻量级分析程序，由兼容各种探针Receiver、流式分析内核和查询内核三部分构成。<br>探针：基于无侵入式的收集，并通过HTTP或者gRPC方式发送数据到OAP Server。<br>存储实现(Storage Implementors)，SkyWalking OAP Server支持多种存储实现并且提供了标准接口，可支持不同<br>的存储后端。<br>UI模块(SkyWalking)，通过标准的GraphQL(Facebook在2012年开源)协议进行统计数据查询和展示 。</p>
+<p>设计模式</p>
+<p>面向协议设计：面向协议设计是SkyWalking从5.x开始严格遵守的首要设计原则，组件之间使用标准的协议进行数据交互。</p>
+<p>协议有探针协议和查询协议</p>
+<p>探针协议：</p>
+<p>探针上报协议：协议包括语言探针的注册、Metrics数据上报、Tracing数据据上报等标准，Java、Go等探针都需要严格遵守此协议的标准。<br>探针交互协议：因为分布式追踪环境，探针间需要借助HTTP Header、MQ Header在应用之间进行通信和交互，探针交互协议就定义了交互的数据格式。<br>Service Mesh协议：是SkyWalking对Service Mesh抽象的专有协议，任何Mesh类的服务都可以通过此协议直接上传指标数据，用于计算服务的指标数据和绘制拓扑图。<br>第三方协议： 对大型的第三方开源项目 尤其是Service Mesh核心平台Istio和Envoy,提供核心协议适配，支持针对Istio+Envoy Service Mesh进行无缝对接。</p>
+<p>数据查询协议：</p>
+<p>元数据查询：查询在SkyWalking注册的服务、服务实例、Endpoint等元数据信息。<br>拓扑关系查询：查询全局、或者单个服务、Endpoint的拓扑图及依赖关系。<br>Metrics指标查询： 查询指标数据。<br>聚合指标查询：区间范围均值查询及Top N排名数据查询等。<br>Trace查询：追踪数据的明细查询。<br>告警查询：基于表达式，判断指标数据是否超出阈值。</p>
+<p>skywalking 设计：</p>
+<p>模块化设计：<br>探针收负责集数据<br>前端负责展示数据<br>OAP Server负责从后端存储读写数据<br>后端存储负责持久化数据</p>
+<p>轻量化设计：<br>SkyWalking在设计之初就提出了轻量化的设计理念，SkyWalking使用最轻量级的jar包模式，实现强大的数据处理和分析能力、可扩展能力和模块化能力。</p>
+<p>skywalking 优势：<br>兼容性好：<br>支持传统的分部署架构dubbo和spring cloud，也支持云原生中的Istio和envoy。<br>易于部署和后期维护<br>组件化，可以自定义部署，后期横向扩容简单<br>高性能<br>每天数T的数据无压力<br>易于二次开发<br>标准的http和grpc协议，开源的项目，企业可以自主二次开发</p>
+<h2 id="三：部署skywalking"><a href="#三：部署skywalking" class="headerlink" title="三：部署skywalking"></a>三：部署skywalking</h2><p>二进制部署-架构规划：</p>
+<p>skywalking-ui: 前端服务,端口号8080。<br>skywalking-oap(Observability Analysis Platform)：可观测性分析平台,11800为数据写入端口，12800为</p>
+<p>查询端口。<br>es7：9200为elasticsearch的数据读写端口，skywalking支持的存储有elasticsearch、h2、mysql、<br>tidb、influxdb、postgresql等。<br>agent: app服务器部署skywalking agent，用于收集app中的访问请求。</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016213059072.png" alt="image-20221016213059072"></p>
+<p>二进制部署-部署elasticsearch：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@skywalking-es:~<span class="comment"># dpkg -i elasticsearch-7.10.1-amd64.deb</span></span><br><span class="line">root@skywalking-es:~<span class="comment"># vim /etc/elasticsearch/elasticsearch.yml</span></span><br><span class="line">cluster.name: skywalking-es-cluster</span><br><span class="line">node.name: node1</span><br><span class="line">path.data: /var/lib/elasticsearch</span><br><span class="line">path.logs: /var/log/elasticsearch</span><br><span class="line">network.host: 192.168.3.80</span><br><span class="line">http.port: 9200</span><br><span class="line">discovery.seed_hosts: [<span class="string">&quot;192.168.3.80&quot;</span>]</span><br><span class="line">cluster.initial_master_nodes: [<span class="string">&quot;192.168.3.80&quot;</span>]</span><br><span class="line">root@skywalking-es:~<span class="comment"># systemctl restart elasticsearch.service</span></span><br><span class="line">root@skywalking-es:~<span class="comment"># systemctl enable elasticsearch.service</span></span><br></pre></td></tr></table></figure>
 
+<p>二进制部署-验证elasticsearch：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016220513894.png" alt="image-20221016220513894"></p>
+<p>二进制部署-部署skywalking server：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">root@skywalking-server:~<span class="comment"># apt install openjdk-11-jdk -y</span></span><br><span class="line">root@skywalking-server:~<span class="comment"># pwd</span></span><br><span class="line">/root</span><br><span class="line">root@skywalking-server:~<span class="comment"># tar xvf apache-skywalking-apm-es7-8.6.0.tar.gz</span></span><br><span class="line">root@skywalking-server:~<span class="comment"># cd apache-skywalking-apm-bin-es7/</span></span><br><span class="line">root@skywalking-server:~/apache-skywalking-apm-bin-es7<span class="comment"># vim config/application.yml</span></span><br><span class="line">修改存储：</span><br><span class="line">111 storage:</span><br><span class="line">112 selector: <span class="variable">$&#123;SW_STORAGE:elasticsearch7&#125;</span></span><br><span class="line">139 elasticsearch7: </span><br><span class="line">140 nameSpace: <span class="variable">$&#123;SW_NAMESPACE:&quot;&quot;&#125;</span></span><br><span class="line">141 clusterNodes: <span class="variable">$&#123;SW_STORAGE_ES_CLUSTER_NODES:192.168.3.81:9200&#125;</span></span><br><span class="line">root@skywalking-server:~/apache-skywalking-apm-bin-es7<span class="comment"># ./bin/startup.sh</span></span><br><span class="line">SkyWalking OAP started successfully!</span><br><span class="line">SkyWalking Web Application started successfully!</span><br><span class="line"><span class="comment">#注意修改行数</span></span><br></pre></td></tr></table></figure>
+
+<p>二进制部署-验证elasticsearch数据：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016230448486.png" alt="image-20221016230448486"></p>
+<p>二进制部署-验证skywalking server：</p>
+<p><img src="/2022/10/16/skywalking%E7%AE%80%E4%BB%8B%E4%B8%8A/image-20221016230516060.png" alt="image-20221016230516060"></p>
+<p>二进制部署-验证skywalking server：(略)</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2>
                 
             </div>
             <hr/>
