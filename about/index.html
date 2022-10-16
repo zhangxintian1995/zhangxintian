@@ -400,10 +400,15 @@
 
 
 
+<div class="statis">
+    <span class="count"><a href="/categories">1</a></span>
+    <span class="name">Categories</span>
+</div>
+
 
 
 <div class="statis">
-    <span class="count"><a href="/tags">1</a></span>
+    <span class="count"><a href="/tags">4</a></span>
     <span class="name">Tags</span>
 </div>
 
@@ -425,10 +430,15 @@
 
 
 
+<div class="statis">
+    <span class="count"><a href="/categories">1</a></span>
+    <span class="name">Categories</span>
+</div>
+
 
 
 <div class="statis">
-    <span class="count"><a href="/tags">1</a></span>
+    <span class="count"><a href="/tags">4</a></span>
     <span class="name">Tags</span>
 </div>
 
@@ -598,7 +608,7 @@
                 type: 'pie',
                 radius: '50%',
                 color: ['#6772e5', '#ff9e0f', '#fa755a', '#3ecf8e', '#82d3f4', '#ab47bc', '#525f7f', '#f51c47', '#26A69A'],
-                data: [],
+                data: [{"name":"Markdown","value":1}],
                 itemStyle: {
                     emphasis: {
                         shadowBlur: 10,
@@ -622,7 +632,7 @@
         xAxis: [
             {
                 type: 'category',
-                data: ["k8s"]
+                data: ["k8s","Typora","Markdown","prometheus"]
             }
         ],
         yAxis: [
@@ -635,7 +645,7 @@
                 type: 'bar',
                 color: ['#82d3f4'],
                 barWidth : 18,
-                data: [1],
+                data: [1,1,1,1],
                 markPoint: {
                     symbolSize: 45,
                     data: [{
@@ -755,6 +765,24 @@
             
             <a href="/tags/k8s/">
                 <span class="chip center-align waves-effect waves-light chip-default">k8s</span>
+            </a>
+            
+            
+            
+            <a href="/tags/Typora/">
+                <span class="chip center-align waves-effect waves-light chip-default">Typora</span>
+            </a>
+            
+            
+            
+            <a href="/tags/Markdown/">
+                <span class="chip center-align waves-effect waves-light chip-default">Markdown</span>
+            </a>
+            
+            
+            
+            <a href="/tags/prometheus/">
+                <span class="chip center-align waves-effect waves-light chip-default">prometheus</span>
             </a>
             
             

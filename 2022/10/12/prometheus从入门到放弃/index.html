@@ -4,9 +4,8 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Linux运维修行之路">
-    <meta name="description" content="
-title: prometheus从入门到放弃date: 2022-10-12 22:36:15author: 西伯利亚狼img: https://img2.baidu.com/it/u=953928104,1672966396&amp;amp;">
+    <meta name="keywords" content="prometheus从入门到放弃, Linux运维修行之路">
+    <meta name="description" content="prometheus简介">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -18,7 +17,7 @@ title: prometheus从入门到放弃date: 2022-10-12 22:36:15author: 西伯利亚
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Linux运维修行之路</title>
+    <title>prometheus从入门到放弃 | Linux运维修行之路</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     
 
@@ -39,9 +38,7 @@ title: prometheus从入门到放弃date: 2022-10-12 22:36:15author: 西伯利亚
 
 
 
-    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
     <link rel="stylesheet" href="/css/post.css">
-
 
 
 
@@ -335,12 +332,12 @@ title: prometheus从入门到放弃date: 2022-10-12 22:36:15author: 西伯利亚
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/0.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://img2.baidu.com/it/u=953928104,1672966396&fm=253&fmt=auto&app=138&f=JPG?w=667&h=500')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title"></h1>
+                    <h1 class="description center-align post-title">prometheus从入门到放弃</h1>
                 </div>
             </div>
         </div>
@@ -350,24 +347,43 @@ title: prometheus从入门到放弃date: 2022-10-12 22:36:15author: 西伯利亚
 
 
 
-<main class="post-container content">
+<main class="container content">
 
     
-    <div class="row">
-    <div id="main-content" class="col s12 m12 l9">
-        <!-- 文章内容详情 -->
+    <!-- 文章内容详情 -->
 <div id="artDetail">
     <div class="card">
         <div class="card-content article-info">
             <div class="row tag-cate">
                 <div class="col s7">
                     
-                          <div class="article-tag">
-                            <span class="chip bg-color">No tag</span>
-                          </div>
+                    <div class="article-tag">
+                        
+                            <a href="/tags/Typora/">
+                                <span class="chip bg-color">Typora</span>
+                            </a>
+                        
+                            <a href="/tags/Markdown/">
+                                <span class="chip bg-color">Markdown</span>
+                            </a>
+                        
+                            <a href="/tags/prometheus/">
+                                <span class="chip bg-color">prometheus</span>
+                            </a>
+                        
+                    </div>
                     
                 </div>
                 <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/Markdown/" class="post-category">
+                                Markdown
+                            </a>
+                        
+                    </div>
                     
                 </div>
             </div>
@@ -397,15 +413,7 @@ title: prometheus从入门到放弃date: 2022-10-12 22:36:15author: 西伯利亚
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <hr>
-<p>title: prometheus从入门到放弃<br>date: 2022-10-12 22:36:15<br>author: 西伯利亚狼<br>img: <a target="_blank" rel="noopener" href="https://img2.baidu.com/it/u=953928104,1672966396&amp;fm=253&amp;fmt=auto&amp;app=138&amp;f=JPG?w=667&amp;h=500">https://img2.baidu.com/it/u=953928104,1672966396&amp;fm=253&amp;fmt=auto&amp;app=138&amp;f=JPG?w=667&amp;h=500</a><br>top: true<br>hide: false<br>cover: true<br>coverImg: &#x2F;images&#x2F;1.jpg<br>toc: false<br>mathjax: false<br>summary: prometheus简介<br>categories: Markdown<br>tags:</p>
-<ul>
-<li>Typora</li>
-<li>Markdown</li>
-<li>prometheus</li>
-</ul>
-<hr>
-<h3 id="5-7：alertmanager-高可用"><a href="#5-7：alertmanager-高可用" class="headerlink" title="5.7：alertmanager 高可用"></a>5.7：alertmanager 高可用</h3><h4 id="5-7-1：单机："><a href="#5-7-1：单机：" class="headerlink" title="5.7.1：单机："></a>5.7.1：单机：</h4><p>  大部分使用alertmanager组件的时候，都是用的单点架构，架构图如下图</p>
+                <h3 id="5-7：alertmanager-高可用"><a href="#5-7：alertmanager-高可用" class="headerlink" title="5.7：alertmanager 高可用"></a>5.7：alertmanager 高可用</h3><h4 id="5-7-1：单机："><a href="#5-7-1：单机：" class="headerlink" title="5.7.1：单机："></a>5.7.1：单机：</h4><p>  大部分使用alertmanager组件的时候，都是用的单点架构，架构图如下图</p>
 <p><img src="/2022/10/12/prometheus%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E6%94%BE%E5%BC%83/image-20221013194818842.png" alt="image-20221013194818842"></p>
 <h4 id="5-7-2：基于负载均衡："><a href="#5-7-2：基于负载均衡：" class="headerlink" title="5.7.2：基于负载均衡："></a>5.7.2：基于负载均衡：</h4><p><img src="/2022/10/12/prometheus%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E6%94%BE%E5%BC%83/image-20221013194926980.png" alt="image-20221013194926980"></p>
 <h4 id="5-7-3：基于-Gossip-机制："><a href="#5-7-3：基于-Gossip-机制：" class="headerlink" title="5.7.3：基于 Gossip 机制："></a>5.7.3：基于 Gossip 机制：</h4><p><a target="_blank" rel="noopener" href="https://yunlzheng.gitbook.io/prometheus-book/part-ii-prometheus-jin-jie/readmd/alertmanager-high-availability">https://yunlzheng.gitbook.io/prometheus-book/part-ii-prometheus-jin-jie/readmd/alertmanager-high-availability</a></p>
@@ -603,7 +611,19 @@ title: prometheus从入门到放弃date: 2022-10-12 22:36:15author: 西伯利亚
                 <div class="post-meta__tag-list" style="display: inline-block;">
                     
                         <div class="article-tag">
-                            <span class="chip bg-color">No tag</span>
+                            
+                                <a href="/tags/Typora/">
+                                    <span class="chip bg-color">Typora</span>
+                                </a>
+                            
+                                <a href="/tags/Markdown/">
+                                    <span class="chip bg-color">Markdown</span>
+                                </a>
+                            
+                                <a href="/tags/prometheus/">
+                                    <span class="chip bg-color">prometheus</span>
+                                </a>
+                            
                         </div>
                     
                 </div>
@@ -787,87 +807,6 @@ title: prometheus从入门到放弃date: 2022-10-12 22:36:15author: 西伯利亚
 <script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
 
 
-
-    </div>
-    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
-        <div class="toc-widget card" style="background-color: white;">
-            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
-            <div id="toc-content"></div>
-        </div>
-    </div>
-</div>
-
-<!-- TOC 悬浮按钮. -->
-
-<div id="floating-toc-btn" class="hide-on-med-and-down">
-    <a class="btn-floating btn-large bg-color">
-        <i class="fas fa-list-ul"></i>
-    </a>
-</div>
-
-
-<script src="/libs/tocbot/tocbot.min.js"></script>
-<script>
-    $(function () {
-        tocbot.init({
-            tocSelector: '#toc-content',
-            contentSelector: '#articleContent',
-            headingsOffset: -($(window).height() * 0.4 - 45),
-            collapseDepth: Number('0'),
-            headingSelector: 'h2, h3, h4'
-        });
-
-        // Set scroll toc fixed.
-        let tocHeight = parseInt($(window).height() * 0.4 - 64);
-        let $tocWidget = $('.toc-widget');
-        $(window).scroll(function () {
-            let scroll = $(window).scrollTop();
-            /* add post toc fixed. */
-            if (scroll > tocHeight) {
-                $tocWidget.addClass('toc-fixed');
-            } else {
-                $tocWidget.removeClass('toc-fixed');
-            }
-        });
-
-        
-        /* 修复文章卡片 div 的宽度. */
-        let fixPostCardWidth = function (srcId, targetId) {
-            let srcDiv = $('#' + srcId);
-            if (srcDiv.length === 0) {
-                return;
-            }
-
-            let w = srcDiv.width();
-            if (w >= 450) {
-                w = w + 21;
-            } else if (w >= 350 && w < 450) {
-                w = w + 18;
-            } else if (w >= 300 && w < 350) {
-                w = w + 16;
-            } else {
-                w = w + 14;
-            }
-            $('#' + targetId).width(w);
-        };
-
-        // 切换TOC目录展开收缩的相关操作.
-        const expandedClass = 'expanded';
-        let $tocAside = $('#toc-aside');
-        let $mainContent = $('#main-content');
-        $('#floating-toc-btn .btn-floating').click(function () {
-            if ($tocAside.hasClass(expandedClass)) {
-                $tocAside.removeClass(expandedClass).hide();
-                $mainContent.removeClass('l9');
-            } else {
-                $tocAside.addClass(expandedClass).show();
-                $mainContent.addClass('l9');
-            }
-            fixPostCardWidth('artDetail', 'prenext-posts');
-        });
-        
-    });
-</script>
 
     
 
